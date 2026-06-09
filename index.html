@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Z팀 — Terracity P.D. 1분서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy-deep:  #04090f;
+    --navy-mid:   #0e1f36;
+    --gold-dim:   #6a5228;
+    --gold:       #b8873a;
+    --gold-bright:#d4a44e;
+    --gold-shine: #efc76a;
+    --cream:      #ede0c8;
+    --cream-dim:  #b8a88a;
+    --text-body:  #c8bba0;
+    --text-muted: #4e5f78;
+    --border:     rgba(184,135,58,0.22);
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background-color: var(--navy-deep);
+    color: var(--text-body);
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow-x: hidden;
+    position: relative;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    opacity: 0.45; pointer-events: none; z-index: 100;
+  }
+  #bg-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .bg-badge {
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:580px; height:580px; opacity:0.028; pointer-events:none; z-index:0;
+  }
+  .top-bar {
+    position:fixed; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,transparent 0%,var(--gold) 30%,var(--gold-shine) 50%,var(--gold) 70%,transparent 100%);
+    z-index:50;
+  }
+
+  /* ── Header ── */
+  .page-header { position:relative; z-index:1; text-align:center; margin-bottom:28px; animation:fadeDown 0.7s ease both; }
+  .precinct-eyebrow {
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    font-family:'Courier Prime',monospace; font-size:9.5px; letter-spacing:0.38em;
+    color:var(--gold); text-transform:uppercase;
+  }
+  .precinct-eyebrow::before, .precinct-eyebrow::after {
+    content:''; display:inline-block; width:48px; height:1px; opacity:0.5;
+  }
+  .precinct-eyebrow::before { background:linear-gradient(to right,transparent,var(--gold)); }
+  .precinct-eyebrow::after  { background:linear-gradient(to left, transparent,var(--gold)); }
+
+  /* ── Layout ── */
+  .layout { display:flex; align-items:center; position:relative; z-index:1; animation:fadeUp 0.8s ease 0.15s both; }
+
+  /* ── Left: Wallet ── */
+  .left-col { display:flex; flex-direction:column; align-items:center; gap:14px; padding:0 28px; }
+  .wallet-frame {
+    position:relative; padding:12px;
+    border:1px solid var(--border);
+    background:linear-gradient(160deg,rgba(14,31,54,0.7) 0%,rgba(4,9,15,0.95) 100%);
+  }
+  .wallet-frame-label {
+    text-align:center; font-family:'Courier Prime',monospace; font-size:8px;
+    letter-spacing:0.32em; color:var(--gold); opacity:0.55;
+    padding-bottom:9px; border-bottom:1px solid var(--border); margin-bottom:10px; text-transform:uppercase;
+  }
+  .corner { position:absolute; width:12px; height:12px; border-color:var(--gold-bright); border-style:solid; opacity:0.65; }
+  .corner.tl { top:4px;    left:4px;    border-width:1.5px 0 0 1.5px; }
+  .corner.tr { top:4px;    right:4px;   border-width:1.5px 1.5px 0 0; }
+  .corner.bl { bottom:4px; left:4px;    border-width:0 0 1.5px 1.5px; }
+  .corner.br { bottom:4px; right:4px;   border-width:0 1.5px 1.5px 0; }
+  .wallet-hint { font-family:'Courier Prime',monospace; font-size:9.5px; letter-spacing:0.22em; color:var(--text-muted); text-align:center; }
+
+  /* ── Divider ── */
+  .v-divider {
+    width:1px; height:540px; flex-shrink:0; margin:0 8px; position:relative; opacity:0.35;
+    background:linear-gradient(to bottom,transparent 0%,var(--gold-dim) 20%,var(--gold) 50%,var(--gold-dim) 80%,transparent 100%);
+  }
+  .v-divider-gem {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:6px; height:6px; background:var(--gold-bright); rotate:45deg; opacity:0.7;
+  }
+
+  /* ── Right: Panel ── */
+  .right-col { padding:0 36px; width:390px; display:flex; flex-direction:column; }
+
+  /* Panel content with fade transition */
+  #panel-content {
+    display:flex; flex-direction:column; gap:22px;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  #panel-content.fading { opacity:0; transform:translateY(8px); }
+
+  /* Shared panel elements */
+  .r-precinct { font-family:'Courier Prime',monospace; font-size:9px; letter-spacing:0.3em; color:var(--gold); opacity:0.7; text-transform:uppercase; margin-bottom:6px; }
+  .r-species  { color:var(--gold-bright); opacity:1; }
+  .r-team-name {
+    font-family:'Cinzel',serif; font-size:62px; font-weight:700; color:var(--cream);
+    line-height:1; letter-spacing:-0.01em;
+    text-shadow:0 0 60px rgba(184,135,58,0.18), 0 2px 4px rgba(0,0,0,0.5);
+  }
+  .r-team-name .team { color:var(--gold-shine); }
+
+  /* Character-specific overrides */
+  .r-char-name { font-size:52px; line-height:1.05; }
+  .r-name-en {
+    font-family:'Cinzel',serif; font-size:14px; font-weight:400;
+    color:var(--gold-dim); letter-spacing:0.2em; text-transform:uppercase;
+    margin-top:2px; margin-bottom:2px;
+  }
+
+  .r-tagline { font-family:'EB Garamond',serif; font-style:italic; font-size:14.5px; color:var(--cream-dim); letter-spacing:0.04em; line-height:1.65; margin-top:-4px; }
+  .gold-rule { height:1px; background:linear-gradient(to right,var(--gold-bright) 0%,var(--gold-dim) 60%,transparent 100%); opacity:0.45; }
+  .r-desc { font-size:14.5px; line-height:1.85; color:var(--text-body); }
+
+  .r-char-badge-num {
+    font-family:'Courier Prime',monospace; font-size:9.5px; letter-spacing:0.4em;
+    color:var(--gold-dim); opacity:0.55; text-align:left;
+  }
+
+  /* Character list (team view only) */
+  .char-section-label { font-family:'Courier Prime',monospace; font-size:8.5px; letter-spacing:0.35em; color:var(--gold); opacity:0.55; text-transform:uppercase; margin-bottom:6px; }
+  .char-list { display:flex; flex-direction:column; }
+  .char-item {
+    display:grid; grid-template-columns:24px 1fr auto; align-items:baseline; gap:8px;
+    padding:7px 6px 7px 2px; border-bottom:1px solid rgba(184,135,58,0.1);
+    cursor:default; transition:padding-left 0.2s ease, background 0.2s ease;
+  }
+  .char-item:first-child { border-top:1px solid rgba(184,135,58,0.1); }
+  .char-item:hover { background:rgba(184,135,58,0.045); padding-left:8px; }
+  .char-num { font-family:'Courier Prime',monospace; font-size:9.5px; color:var(--gold-dim); opacity:0.8; }
+  .char-name { font-family:'EB Garamond',serif; font-size:15px; font-weight:500; color:var(--cream); display:flex; align-items:baseline; gap:7px; }
+  .char-name-en { font-size:12px; color:var(--cream-dim); opacity:0.6; font-weight:400; letter-spacing:0.03em; }
+  .char-meta { font-family:'Courier Prime',monospace; font-size:9.5px; color:var(--text-muted); text-align:right; display:flex; align-items:center; gap:5px; }
+  .char-meta-dot { opacity:0.35; }
+  .char-species { color:var(--gold-dim); opacity:0.9; }
+
+  /* CTA */
+  .cta-btn {
+    display:inline-flex; align-items:center; gap:12px; padding:11px 26px;
+    border:1px solid var(--gold-bright); color:var(--gold-shine);
+    font-family:'Cinzel',serif; font-size:12px; font-weight:600;
+    letter-spacing:0.18em; text-decoration:none; text-transform:uppercase;
+    position:relative; overflow:hidden;
+    transition:letter-spacing 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+  }
+  .cta-btn::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent 0%,rgba(239,199,106,0.1) 50%,transparent 100%);
+    transform:translateX(-110%); transition:transform 0.55s ease;
+  }
+  .cta-btn:hover::before { transform:translateX(110%); }
+  .cta-btn:hover { letter-spacing:0.21em; background:rgba(184,135,58,0.07); box-shadow:0 0 28px rgba(184,135,58,0.14),inset 0 0 16px rgba(184,135,58,0.04); }
+  .cta-arrow { transition:transform 0.3s ease; }
+  .cta-btn:hover .cta-arrow { transform:translateX(5px); }
+
+  /* Footer */
+  .page-footer { position:relative; z-index:1; margin-top:28px; font-family:'Courier Prime',monospace; font-size:8.5px; letter-spacing:0.3em; color:var(--text-muted); opacity:0.45; text-transform:uppercase; animation:fadeUp 0.8s ease 0.3s both; }
+
+  /* ── Wallet CSS ── */
+  .wallet-container { width:435px; height:500px; position:relative; perspective:1500px; background-color:#000000; }
+  .leaf { position:absolute; top:50%; left:0; width:100%; height:50%; transform-origin:top center; transform-style:preserve-3d; cursor:grab; }
+  .leaf:active { cursor:grabbing; }
+  .front, .back { position:absolute; top:0; left:0; width:100%; height:100%; backface-visibility:hidden; border-radius:0 0 15px 15px; box-sizing:border-box; background-size:cover; background-position:center; background-repeat:no-repeat; background-color:#1a1a1a; }
+  .back { transform:rotateX(180deg); }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(14px)}  to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+  <div class="top-bar"></div>
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="bg-badge">
+    <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="110,8 130,52 178,52 142,80 155,126 110,100 65,126 78,80 42,52 90,52" stroke="#c4963c" stroke-width="1.2" fill="none"/>
+      <circle cx="110" cy="110" r="44" stroke="#c4963c" stroke-width="0.8" fill="none" stroke-dasharray="3 6"/>
+      <circle cx="110" cy="110" r="52" stroke="#c4963c" stroke-width="0.5" fill="none" opacity="0.6"/>
+      <text x="110" y="105" text-anchor="middle" fill="#c4963c" font-family="serif" font-size="9" letter-spacing="2">TERRACITY</text>
+      <text x="110" y="118" text-anchor="middle" fill="#c4963c" font-family="serif" font-size="7" letter-spacing="1.5">POLICE DEPT</text>
+      <text x="110" y="130" text-anchor="middle" fill="#c4963c" font-family="serif" font-size="6" letter-spacing="2">· 1ST ·</text>
+    </svg>
+  </div>
+
+  <header class="page-header">
+    <p class="precinct-eyebrow">Terracity Police Department &nbsp;·&nbsp; 1st Precinct</p>
+  </header>
+
+  <main class="layout">
+    <div class="left-col">
+      <div class="wallet-frame">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="wallet-frame-label">T.P.D. · Official Identification · 1st Precinct</div>
+        <div class="wallet-container" id="wallet">
+          <div class="leaf">
+            <div class="front" style="background-image:url('지갑커버.png');"></div>
+            <div class="back"  style="background-image:url('고든1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('고든2.png');"></div>
+            <div class="back"  style="background-image:url('비요른1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('비요른2.png');"></div>
+            <div class="back"  style="background-image:url('빌터1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('빌터2.png');"></div>
+            <div class="back"  style="background-image:url('카엘1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('카엘2.png');"></div>
+            <div class="back"  style="background-image:url('로비1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('로비2.png');"></div>
+            <div class="back"  style="background-image:url('마일즈1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('마일즈2.png');"></div>
+            <div class="back"  style="background-image:url('아덴1.png');"></div>
+          </div>
+          <div class="leaf">
+            <div class="front" style="background-image:url('아덴2.png');"></div>
+            <div class="back"  style="background-image:url('지갑뒷면.png');"></div>
+          </div>
+        </div>
+      </div>
+      <p class="wallet-hint">↕ 드래그하여 페이지 넘기기</p>
+    </div>
+
+    <div class="v-divider"><div class="v-divider-gem"></div></div>
+
+    <div class="right-col">
+      <div id="panel-content"></div>
+    </div>
+  </main>
+
+  <footer class="page-footer">Case File #Z-0001 &nbsp;·&nbsp; Terracity P.D. &nbsp;·&nbsp; 1st Precinct</footer>
+
+<script>
+  /* ── Character data ── */
+  const CHARS = [
+    {
+      num:'01', nameKo:'고든', nameEn:'Gordon', species:'숫양', rank:'서장',
+      catchphrase:'다정하게 말했잖아요. 들은 분이 예민한 거죠.',
+      desc:'199cm의 숫양. 솜사탕 같은 곱슬머리에 속지 말 것. 말보다 침묵이 더 무거운 사람. 부하들의 이름을 모두 기억하며, 그들이 실수를 저지르면 가장 오래 가슴에 담아두는 남자.'
+    },
+    {
+      num:'02', nameKo:'비요른', nameEn:'Bjorn', species:'엘크', rank:'경위',
+      catchphrase:'규정은 우리가 지키는 것이지, 우리를 지키는 게 아니야.',
+      desc:'189cm의 엘크. Z팀의 실질적 엔진. 냉소로 포장한 헌신. 감정보다 절차가 먼저지만, 절차보다 팀이 먼저인 남자. (아재개그에 유의)'
+    },
+    {
+      num:'03', nameKo:'빌터', nameEn:'Vilter', species:'사자', rank:'순경',
+      catchphrase:'뭘 그렇게 심각하게 봐. 나 원래 이래.',
+      desc:'213cm의 사자. 덩치 산만한 맹수, 팀 지능 평균치 하향 시키는 주범. 소형종과 여성을 다루기 어려워 함.'
+    },
+    {
+      num:'04', nameKo:'카엘', nameEn:'Kael', species:'흑표범', rank:'순경',
+      catchphrase:'안 움직이는 게 아니라 효율적인 거야.',
+      desc:'189cm의 흑표범. 나태함 속에서 우주급 안정감을 찾으며 동료들의 지랄발광을 구경만 함. 공생의 달인.'
+    },
+    {
+      num:'05', nameKo:'로비', nameEn:'Robi', species:'금강앵무', rank:'순경',
+      catchphrase:'에이, 저 원래 이것보다 훨씬 더 멋있는데!',
+      desc:'185cm의 홍금강앵무. 오색찬란한 머리와 선글라스로 무장한 Z팀 공식 개그맨이자 날지 못하는 새.'
+    },
+    {
+      num:'06', nameKo:'마일즈', nameEn:'Miles', species:'민트여우', rank:'순경',
+      catchphrase:'괜찮아요~ 진짜로요. (안괜찮아)',
+      desc:'180cm의 민트색 여우. 능청과 배려 사이 어딘가. 분위기 메이커인지 희생양인지 본인도 가끔 헷갈림.'
+    },
+    {
+      num:'07', nameKo:'아덴', nameEn:'Aden', species:'롭이어 토끼', rank:'순경',
+      catchphrase:'제가 틀린 게 아니라 당신이 이상한 겁니다.',
+      desc:'173cm의 롭이어토끼. 원칙에 미친 FM. 팀 내 최연소 엘리트, 팀 내 유일한 규정 준수자. 물론, 폭발 전까지만.'
+    },
+  ];
+
+  // activeIndex → CHARS index (null = team view)
+  // 0=커버, 1=고든, 2=비요른, 3=빌터, 4=카엘, 5=로비, 6=마일즈, 7=아덴, 8=뒷면
+  const PAGE_MAP = [null, 0, 1, 2, 3, 4, 5, 6, null];
+
+  /* ── Panel rendering ── */
+  function buildTeamHTML() {
+    const listItems = CHARS.map((c, i) => `
+      <div class="char-item">
+        <span class="char-num">${c.num}</span>
+        <span class="char-name">${c.nameKo}<span class="char-name-en">${c.nameEn}</span></span>
+        <span class="char-meta"><span class="char-species">${c.species}</span><span class="char-meta-dot">·</span>${c.rank}</span>
+      </div>`).join('');
+    return `
+      <div>
+        <p class="r-precinct">Terracity P.D. &nbsp;·&nbsp; 1st Precinct</p>
+        <h1 class="r-team-name">Z<span class="team">팀</span></h1>
+        <p class="r-tagline">다양성, 그 장단점만이 지배하는 도시에서,<br>그 밤을 지키는 사람들.</p>
+      </div>
+      <div class="gold-rule"></div>
+      <p class="r-desc">테라시 경찰국 1분서 소속,<br>종도 성격도 사연도 제각각인 일곱 명의 팀.</p>
+      <div>
+        <p class="char-section-label">— 소속 수사관 · 7인</p>
+        <div class="char-list">${listItems}</div>
+      </div>
+      <div><a href="#" class="cta-btn">대화 시작하기 <span class="cta-arrow">→</span></a></div>`;
+  }
+
+  function buildCharHTML(c) {
+    return `
+      <div>
+        <p class="r-precinct"><span class="r-species">${c.species}</span> &nbsp;·&nbsp; ${c.rank}</p>
+        <h1 class="r-team-name r-char-name">${c.nameKo}</h1>
+        <p class="r-name-en">${c.nameEn}</p>
+        <p class="r-tagline">"${c.catchphrase}"</p>
+      </div>
+      <div class="gold-rule"></div>
+      <p class="r-desc">${c.desc}</p>
+      <p class="r-char-badge-num">No. ${c.num}</p>
+      <div><a href="#" class="cta-btn"> 대화하기 <span class="cta-arrow">→</span></a></div>`;
+  }
+
+  let currentKey = null;
+
+  function switchPanel(index) {
+    const charIdx = PAGE_MAP[Math.min(index, PAGE_MAP.length - 1)];
+    const key = charIdx === null ? 'team' : CHARS[charIdx].id || charIdx;
+    if (key === currentKey) return;
+    currentKey = key;
+
+    const panel = document.getElementById('panel-content');
+    panel.classList.add('fading');
+    setTimeout(() => {
+      panel.innerHTML = charIdx === null ? buildTeamHTML() : buildCharHTML(CHARS[charIdx]);
+      panel.classList.remove('fading');
+    }, 180);
+  }
+
+  // Init
+  document.getElementById('panel-content').innerHTML = buildTeamHTML();
+  currentKey = 'team';
+
+  /* ── Particles ── */
+  const canvas = document.getElementById('bg-canvas');
+  const ctx    = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const parts = Array.from({length:110}, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 1.3 + 0.2,
+    alpha: Math.random() * 0.38 + 0.04,
+    vy: -(Math.random() * 0.22 + 0.03),
+    vx: (Math.random() - 0.5) * 0.12,
+    phase: Math.random() * Math.PI * 2,
+    freq:  Math.random() * 0.016 + 0.004,
+  }));
+
+  function tick(ts) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    parts.forEach(p => {
+      const flicker = 0.45 + 0.55 * Math.sin(ts * 0.001 * p.freq * 60 + p.phase);
+      ctx.globalAlpha = p.alpha * flicker;
+      ctx.fillStyle = '#c4963c';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -6) { p.y = canvas.height + 6; p.x = Math.random() * canvas.width; }
+      if (p.x < -6)             p.x = canvas.width + 6;
+      if (p.x > canvas.width+6) p.x = -6;
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  /* ── Wallet interaction ── */
+  const container  = document.getElementById('wallet');
+  const leaves     = document.querySelectorAll('.leaf');
+  let isDragging   = false;
+  let isAnimating  = false;
+  let startY       = 0;
+  let activeLeaf   = null;
+  let activeIndex  = 0;
+  let initialAngle = 0;
+
+  function updateZIndexes() {
+    leaves.forEach((leaf, i) => { leaf.style.zIndex = i < activeIndex ? i+1 : leaves.length-i; });
+  }
+  updateZIndexes();
+
+  const getClientY = e => e.touches ? e.touches[0].clientY : e.clientY;
+
+  function startDrag(e) {
+    if (isAnimating) return;
+    const rect   = container.getBoundingClientRect();
+    const clickY = getClientY(e) - rect.top;
+    if (clickY > rect.height / 2) {
+      if (activeIndex < leaves.length) { activeLeaf = leaves[activeIndex]; initialAngle = 0; }
+    } else {
+      if (activeIndex > 0) { activeLeaf = leaves[activeIndex-1]; initialAngle = 180; }
+    }
+    if (activeLeaf) {
+      isDragging = true; startY = getClientY(e);
+      activeLeaf.style.transition = 'none';
+      activeLeaf.style.zIndex = 999;
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('touchmove', drag, {passive:false});
+      document.addEventListener('mouseup',   endDrag);
+      document.addEventListener('touchend',  endDrag);
+    }
+  }
+
+  function drag(e) {
+    if (!isDragging || !activeLeaf) return;
+    e.preventDefault();
+    const leafH = leaves[0].offsetHeight;
+    const angle = Math.max(0, Math.min(180, initialAngle + ((startY - getClientY(e)) / leafH) * 180));
+    activeLeaf.style.transform = `rotateX(${angle}deg)`;
+  }
+
+  function endDrag() {
+    if (!isDragging || !activeLeaf) return;
+    isDragging = false; isAnimating = true;
+    document.removeEventListener('mousemove', drag);
+    document.removeEventListener('touchmove', drag);
+    document.removeEventListener('mouseup',   endDrag);
+    document.removeEventListener('touchend',  endDrag);
+    activeLeaf.style.transition = 'transform 0.4s cubic-bezier(0.2,0.8,0.2,1)';
+    const match = activeLeaf.style.transform.match(/rotateX\(([\d.]+)deg\)/);
+    const cur   = match ? parseFloat(match[1]) : initialAngle;
+    if (initialAngle === 0) {
+      activeLeaf.style.transform = cur > 45  ? 'rotateX(180deg)' : 'rotateX(0deg)';
+      if (cur > 45)  { activeIndex++; switchPanel(activeIndex); }
+    } else {
+      activeLeaf.style.transform = cur < 135 ? 'rotateX(0deg)'   : 'rotateX(180deg)';
+      if (cur < 135) { activeIndex--; switchPanel(activeIndex); }
+    }
+    setTimeout(() => { updateZIndexes(); isAnimating = false; }, 400);
+  }
+
+  container.addEventListener('mousedown',  startDrag);
+  container.addEventListener('touchstart', startDrag, {passive:false});
+</script>
+</body>
+</html>
