@@ -50,7 +50,6 @@
     z-index:50;
   }
 
-  /* ── Header ── */
   .page-header { position:relative; z-index:1; text-align:center; margin-bottom:28px; animation:fadeDown 0.7s ease both; }
   .precinct-eyebrow {
     display:flex; align-items:center; justify-content:center; gap:14px;
@@ -63,10 +62,8 @@
   .precinct-eyebrow::before { background:linear-gradient(to right,transparent,var(--gold)); }
   .precinct-eyebrow::after  { background:linear-gradient(to left, transparent,var(--gold)); }
 
-  /* ── Layout ── */
   .layout { display:flex; align-items:center; position:relative; z-index:1; animation:fadeUp 0.8s ease 0.15s both; }
 
-  /* ── Left: Wallet ── */
   .left-col { display:flex; flex-direction:column; align-items:center; gap:14px; padding:0 28px; }
   .wallet-frame {
     position:relative; padding:12px;
@@ -85,7 +82,6 @@
   .corner.br { bottom:4px; right:4px;   border-width:0 1.5px 1.5px 0; }
   .wallet-hint { font-family:'Courier Prime',monospace; font-size:9.5px; letter-spacing:0.22em; color:var(--text-muted); text-align:center; }
 
-  /* ── Divider ── */
   .v-divider {
     width:1px; height:540px; flex-shrink:0; margin:0 8px; position:relative; opacity:0.35;
     background:linear-gradient(to bottom,transparent 0%,var(--gold-dim) 20%,var(--gold) 50%,var(--gold-dim) 80%,transparent 100%);
@@ -95,17 +91,14 @@
     width:6px; height:6px; background:var(--gold-bright); rotate:45deg; opacity:0.7;
   }
 
-  /* ── Right: Panel ── */
   .right-col { padding:0 36px; width:390px; display:flex; flex-direction:column; }
 
-  /* Panel content with fade transition */
   #panel-content {
     display:flex; flex-direction:column; gap:22px;
     transition: opacity 0.18s ease, transform 0.18s ease;
   }
   #panel-content.fading { opacity:0; transform:translateY(8px); }
 
-  /* Shared panel elements */
   .r-precinct { font-family:'Courier Prime',monospace; font-size:9px; letter-spacing:0.3em; color:var(--gold); opacity:0.7; text-transform:uppercase; margin-bottom:6px; }
   .r-species  { color:var(--gold-bright); opacity:1; }
   .r-team-name {
@@ -115,7 +108,6 @@
   }
   .r-team-name .team { color:var(--gold-shine); }
 
-  /* Character-specific overrides */
   .r-char-name { font-size:52px; line-height:1.05; }
   .r-name-en {
     font-family:'Cinzel',serif; font-size:14px; font-weight:400;
@@ -132,7 +124,6 @@
     color:var(--gold-dim); opacity:0.55; text-align:left;
   }
 
-  /* Character list (team view only) */
   .char-section-label { font-family:'Courier Prime',monospace; font-size:8.5px; letter-spacing:0.35em; color:var(--gold); opacity:0.55; text-transform:uppercase; margin-bottom:6px; }
   .char-list { display:flex; flex-direction:column; }
   .char-item {
@@ -149,7 +140,6 @@
   .char-meta-dot { opacity:0.35; }
   .char-species { color:var(--gold-dim); opacity:0.9; }
 
-  /* CTA */
   .cta-btn {
     display:inline-flex; align-items:center; gap:12px; padding:11px 26px;
     border:1px solid var(--gold-bright); color:var(--gold-shine);
@@ -168,10 +158,8 @@
   .cta-arrow { transition:transform 0.3s ease; }
   .cta-btn:hover .cta-arrow { transform:translateX(5px); }
 
-  /* Footer */
   .page-footer { position:relative; z-index:1; margin-top:28px; font-family:'Courier Prime',monospace; font-size:8.5px; letter-spacing:0.3em; color:var(--text-muted); opacity:0.45; text-transform:uppercase; animation:fadeUp 0.8s ease 0.3s both; }
 
-  /* ── Wallet CSS ── */
   .wallet-container { width:435px; height:500px; position:relative; perspective:1500px; background-color:#000000; }
   .leaf { position:absolute; top:50%; left:0; width:100%; height:50%; transform-origin:top center; transform-style:preserve-3d; cursor:grab; }
   .leaf:active { cursor:grabbing; }
@@ -255,7 +243,6 @@
   <footer class="page-footer">Case File #Z-0001 &nbsp;·&nbsp; Terracity P.D. &nbsp;·&nbsp; 1st Precinct</footer>
 
 <script>
-  /* ── Character data ── */
   const CHARS = [
     {
       num:'01', nameKo:'고든', nameEn:'Gordon', species:'숫양', rank:'서장',
@@ -294,11 +281,8 @@
     },
   ];
 
-  // activeIndex → CHARS index (null = team view)
-  // 0=커버, 1=고든, 2=비요른, 3=빌터, 4=카엘, 5=로비, 6=마일즈, 7=아덴, 8=뒷면
   const PAGE_MAP = [null, 0, 1, 2, 3, 4, 5, 6, null];
 
-  /* ── Panel rendering ── */
   function buildTeamHTML() {
     const listItems = CHARS.map((c, i) => `
       <div class="char-item">
@@ -318,7 +302,7 @@
         <p class="char-section-label">— 소속 수사관 · 7인</p>
         <div class="char-list">${listItems}</div>
       </div>
-      <div><a href="https://share.crack.wrtn.ai/jufchx" class="cta-btn">대화 시작하기 <span class="cta-arrow">→</span></a></div>`;
+      <div><a href="https://share.crack.wrtn.ai/jufchx" class="cta-btn" target="_blank" rel="noopener noreferrer">대화 시작하기 <span class="cta-arrow">→</span></a></div>`;
   }
 
   function buildCharHTML(c) {
@@ -332,7 +316,7 @@
       <div class="gold-rule"></div>
       <p class="r-desc">${c.desc}</p>
       <p class="r-char-badge-num">No. ${c.num}</p>
-      <div><a href="https://share.crack.wrtn.ai/jufchx" class="cta-btn"> 대화하기 <span class="cta-arrow">→</span></a></div>`;
+      <div><a href="https://share.crack.wrtn.ai/jufchx" class="cta-btn" target="_blank" rel="noopener noreferrer">대화하기 <span class="cta-arrow">→</span></a></div>`;
   }
 
   let currentKey = null;
@@ -351,11 +335,9 @@
     }, 180);
   }
 
-  // Init
   document.getElementById('panel-content').innerHTML = buildTeamHTML();
   currentKey = 'team';
 
-  /* ── Particles ── */
   const canvas = document.getElementById('bg-canvas');
   const ctx    = canvas.getContext('2d');
   function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -390,7 +372,6 @@
   }
   requestAnimationFrame(tick);
 
-  /* ── Wallet interaction ── */
   const container  = document.getElementById('wallet');
   const leaves     = document.querySelectorAll('.leaf');
   let isDragging   = false;
